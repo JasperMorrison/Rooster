@@ -27,6 +27,7 @@ import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 /**
  * Updated by gakwaya on Oct/08/2017.
@@ -38,7 +39,8 @@ public class RoosterConnection implements ConnectionListener {
     private  final Context mApplicationContext;
     private  final String mUsername;
     private  final String mPassword;
-    private  final String mServiceName;
+    private  final String mServerDomain;
+    private  final String mServerIP;
     private XMPPTCPConnection mConnection;
     private BroadcastReceiver uiThreadMessageReceiver;//Receives messages from the ui thread.
 
@@ -58,42 +60,38 @@ public class RoosterConnection implements ConnectionListener {
     {
         Log.d(TAG,"RoosterConnection Constructor called.");
         mApplicationContext = context.getApplicationContext();
-        String jid = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
+        mUsername = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
                 .getString("xmpp_jid",null);
         mPassword = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
                 .getString("xmpp_password",null);
-
-        if( jid != null)
-        {
-            mUsername = jid.split("@")[0];
-            mServiceName = jid.split("@")[1];
-        }else
-        {
-            mUsername ="";
-            mServiceName="";
-        }
+        mServerDomain = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
+                .getString("xmpp_domain", null);
+        mServerIP = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
+                .getString("xmpp_ip", null);
     }
 
 
     public void connect() throws IOException,XMPPException,SmackException
     {
-        Log.d(TAG, "Connecting to server " + mServiceName);
+        Log.d(TAG, "Connecting to server " + mServerIP);
+        InetAddress address = InetAddress.getByName(mServerIP);
 
         XMPPTCPConnectionConfiguration conf = XMPPTCPConnectionConfiguration.builder()
-                .setXmppDomain(mServiceName)
-                .setHost("salama.im")
-                .setResource("Rooster")
+                .setXmppDomain(mServerDomain)
+                .setHostAddress(address)
+                .setResource(UserInfo.DEFAULT_USER.rooster)
+                .setDebuggerEnabled(true)
 
                 //Was facing this issue
                 //https://discourse.igniterealtime.org/t/connection-with-ssl-fails-with-java-security-keystoreexception-jks-not-found/62566
                 .setKeystoreType(null) //This line seems to get rid of the problem
 
-                .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
                 .setCompressionEnabled(true).build();
 
         Log.d(TAG, "Username : "+mUsername);
         Log.d(TAG, "Password : "+mPassword);
-        Log.d(TAG, "Server : "+mServiceName);
+        Log.d(TAG, "Server IP: "+mServerIP);
 
 
         //Set up the ui thread broadcast message receiver.
@@ -201,7 +199,7 @@ public class RoosterConnection implements ConnectionListener {
 
     public void disconnect()
     {
-        Log.d(TAG,"Disconnecting from serser "+ mServiceName);
+        Log.d(TAG,"Disconnecting from serser "+  mServerIP);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mApplicationContext);
         prefs.edit().putBoolean("xmpp_logged_in",false).commit();

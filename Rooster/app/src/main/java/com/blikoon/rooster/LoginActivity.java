@@ -46,6 +46,8 @@ public class LoginActivity extends AppCompatActivity
     // UI references.
     private AutoCompleteTextView mJidView;
     private EditText mPasswordView;
+    private EditText mServerIPView;
+    private EditText mServerDomainView;
     private View mProgressView;
     private View mLoginFormView;
     private BroadcastReceiver mBroadcastReceiver;
@@ -58,9 +60,11 @@ public class LoginActivity extends AppCompatActivity
         //Show
         // Set up the login form.
         mJidView = (AutoCompleteTextView) findViewById(R.id.email);
+        mJidView.setText(UserInfo.DEFAULT_USER.name);
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView.setText(UserInfo.DEFAULT_USER.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -71,6 +75,11 @@ public class LoginActivity extends AppCompatActivity
                 return false;
             }
         });
+
+        mServerDomainView = (EditText) findViewById(R.id.domain);
+        mServerDomainView.setText(ServerInfo.DEFALUT_SERVER.hostDomain);
+        mServerIPView = (EditText) findViewById(R.id.server_ip);
+        mServerIPView.setText(ServerInfo.DEFALUT_SERVER.ip);
 
         Button mJidSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mJidSignInButton.setOnClickListener(new OnClickListener() {
@@ -83,8 +92,6 @@ public class LoginActivity extends AppCompatActivity
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         mContext = this;
-
-
     }
 
     @Override
@@ -173,10 +180,14 @@ public class LoginActivity extends AppCompatActivity
         // Reset errors.
         mJidView.setError(null);
         mPasswordView.setError(null);
+        mServerDomainView.setError(null);
+        mServerIPView.setError(null);
 
         // Store values at the time of the login attempt.
         String email = mJidView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String domain = mServerDomainView.getText().toString();
+        String ip = mServerIPView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -193,9 +204,17 @@ public class LoginActivity extends AppCompatActivity
             mJidView.setError(getString(R.string.error_field_required));
             focusView = mJidView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            mJidView.setError(getString(R.string.error_invalid_jid));
-            focusView = mJidView;
+        }
+
+        // Check for valid domain
+        if (TextUtils.isEmpty(domain)){
+            focusView = mServerDomainView;
+            cancel = true;
+        }
+
+        // Check for valid ipv4
+        if (!isIP(ip)){
+            focusView = mServerIPView;
             cancel = true;
         }
 
@@ -217,6 +236,18 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
+    private boolean isIP(String ip){
+        if (TextUtils.isEmpty(ip)){
+            return false;
+        }
+        String pattern =
+                "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+        return ip.matches(pattern);
+    }
+
     private void saveCredentialsAndLogin()
     {
         Log.d(TAG,"saveCredentialsAndLogin() called.");
@@ -224,6 +255,8 @@ public class LoginActivity extends AppCompatActivity
         prefs.edit()
                 .putString("xmpp_jid", mJidView.getText().toString())
                 .putString("xmpp_password", mPasswordView.getText().toString())
+                .putString("xmpp_domain", mServerDomainView.getText().toString())
+                .putString("xmpp_ip", mServerIPView.getText().toString())
                 .putBoolean("xmpp_logged_in",true)
                 .commit();
 
