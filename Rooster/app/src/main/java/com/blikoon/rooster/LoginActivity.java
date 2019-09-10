@@ -57,14 +57,31 @@ public class LoginActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        mContext = this;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean loginAlready = prefs.getBoolean("xmpp_logged_in",false);
+        if (loginAlready){
+            showContactListAty();
+        }
+
+        String name = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getString("xmpp_jid",null);
+        String password = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getString("xmpp_password",null);
+        String domain = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getString("xmpp_domain", null);
+        String ip = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getString("xmpp_ip", null);
+
         //Show
         // Set up the login form.
         mJidView = (AutoCompleteTextView) findViewById(R.id.email);
-        mJidView.setText(UserInfo.DEFAULT_USER.name);
+        mJidView.setText(name!=null?name:UserInfo.DEFAULT_USER.name);
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setText(UserInfo.DEFAULT_USER.password);
+        mPasswordView.setText(password!=null?password:UserInfo.DEFAULT_USER.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -77,9 +94,9 @@ public class LoginActivity extends AppCompatActivity
         });
 
         mServerDomainView = (EditText) findViewById(R.id.domain);
-        mServerDomainView.setText(ServerInfo.DEFALUT_SERVER.hostDomain);
+        mServerDomainView.setText(domain!=null?domain:ServerInfo.DEFALUT_SERVER.hostDomain);
         mServerIPView = (EditText) findViewById(R.id.server_ip);
-        mServerIPView.setText(ServerInfo.DEFALUT_SERVER.ip);
+        mServerIPView.setText(ip!=null?ip:ServerInfo.DEFALUT_SERVER.ip);
 
         Button mJidSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mJidSignInButton.setOnClickListener(new OnClickListener() {
@@ -91,7 +108,6 @@ public class LoginActivity extends AppCompatActivity
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-        mContext = this;
     }
 
     @Override
@@ -112,11 +128,8 @@ public class LoginActivity extends AppCompatActivity
                 {
                     case RoosterConnectionService.UI_AUTHENTICATED:
                         Log.d(TAG,"Got a broadcast to show the main app window");
-                        //Show the main app window
                         showProgress(false);
-                        Intent i2 = new Intent(mContext,ContactListActivity.class);
-                        startActivity(i2);
-                        finish();
+                        showContactListAty();
                         break;
                 }
 
@@ -124,6 +137,13 @@ public class LoginActivity extends AppCompatActivity
         };
         IntentFilter filter = new IntentFilter(RoosterConnectionService.UI_AUTHENTICATED);
         this.registerReceiver(mBroadcastReceiver, filter);
+    }
+
+    private void showContactListAty(){
+        //Show the main app window
+        Intent i2 = new Intent(mContext,ContactListActivity.class);
+        startActivity(i2);
+        finish();
     }
 
     private void populateAutoComplete() {
@@ -257,7 +277,6 @@ public class LoginActivity extends AppCompatActivity
                 .putString("xmpp_password", mPasswordView.getText().toString())
                 .putString("xmpp_domain", mServerDomainView.getText().toString())
                 .putString("xmpp_ip", mServerIPView.getText().toString())
-                .putBoolean("xmpp_logged_in",true)
                 .commit();
 
         //Start the service

@@ -201,10 +201,6 @@ public class RoosterConnection implements ConnectionListener {
     {
         Log.d(TAG,"Disconnecting from serser "+  mServerIP);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mApplicationContext);
-        prefs.edit().putBoolean("xmpp_logged_in",false).commit();
-
-
         if (mConnection != null)
         {
             mConnection.disconnect();
@@ -232,6 +228,8 @@ public class RoosterConnection implements ConnectionListener {
     public void authenticated(XMPPConnection connection, boolean resumed) {
         RoosterConnectionService.sConnectionState=ConnectionState.CONNECTED;
         Log.d(TAG,"Authenticated Successfully");
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mApplicationContext);
+        prefs.edit().putBoolean("xmpp_logged_in",true).commit();
         showContactListActivityWhenAuthenticated();
     }
 
@@ -239,6 +237,8 @@ public class RoosterConnection implements ConnectionListener {
     @Override
     public void connectionClosed() {
         RoosterConnectionService.sConnectionState=ConnectionState.DISCONNECTED;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mApplicationContext);
+        prefs.edit().putBoolean("xmpp_logged_in",false).commit();
         Log.d(TAG,"Connectionclosed()");
 
     }
@@ -247,14 +247,12 @@ public class RoosterConnection implements ConnectionListener {
     public void connectionClosedOnError(Exception e) {
         RoosterConnectionService.sConnectionState=ConnectionState.DISCONNECTED;
         Log.d(TAG,"ConnectionClosedOnError, error "+ e.toString());
-
     }
 
     @Override
     public void reconnectingIn(int seconds) {
         RoosterConnectionService.sConnectionState = ConnectionState.CONNECTING;
         Log.d(TAG,"ReconnectingIn() ");
-
     }
 
     @Override

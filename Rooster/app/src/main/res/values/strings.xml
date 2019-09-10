@@ -17,4 +17,9 @@
         completions."
     </string>
     <string name="rooster_logout">Logout</string>
+    <!-- User status -->
+    <string name="online">online</string>
+    <string name="busy">busy</string>
+    <string name="outline">outline</string>
+    <string name="unknown">NA.</string>
 </resources>

@@ -52,19 +52,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
         Intent intent = getIntent();
         contactJid = intent.getStringExtra("EXTRA_CONTACT_JID");
         setTitle(contactJid);
@@ -107,7 +94,10 @@ public class ChatActivity extends AppCompatActivity {
 
         IntentFilter filter = new IntentFilter(RoosterConnectionService.NEW_MESSAGE);
         registerReceiver(mBroadcastReceiver,filter);
+    }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

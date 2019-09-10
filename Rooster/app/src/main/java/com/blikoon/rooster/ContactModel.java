@@ -1,6 +1,8 @@
 package com.blikoon.rooster;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +35,12 @@ public class ContactModel {
     {
         //Create the Foods and add them to the list;
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String owner = prefs.getString("xmpp_jid",null);
 
-        Contact contact1 = new Contact("a@localhost");
+        Contact contact1 = new Contact("a", getDomain(context));
         mContacts.add(contact1);
-        Contact contact2 = new Contact("b@localhost");
+        Contact contact2 = new Contact("b", getDomain(context));
         mContacts.add(contact2);
 //        Contact contact3 = new Contact("User3@server.com");
 //        mContacts.add(contact3);
@@ -48,6 +52,18 @@ public class ContactModel {
 //        mContacts.add(contact6);
 //        Contact contact7 = new Contact("User7@server.com");
 //        mContacts.add(contact7);
+
+        for (Contact contact : mContacts){
+            if (contact.getName().equals(owner)){
+                mContacts.remove(contact);
+                break;
+            }
+        }
+    }
+
+    private String getDomain(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext())
+                .getString("xmpp_domain", null);
     }
 
     public List<Contact> getContacts()

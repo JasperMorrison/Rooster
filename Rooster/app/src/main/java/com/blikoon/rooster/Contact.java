@@ -5,18 +5,25 @@ package com.blikoon.rooster;
  */
 public class Contact {
     private String jid;
+    private String name;
+    private String domain;
 
-    public Contact(String contactJid )
+    public Contact(String name, String domain)
     {
-        jid = contactJid;
+        this.name = name;
+        this.domain = domain;
     }
 
     public String getJid()
     {
-        return jid;
+        return name + "@" + domain;
     }
 
     public void setJid(String jid) {
         this.jid = jid;
+    }
+
+    public String getName() {
+        return name;
     }
 }

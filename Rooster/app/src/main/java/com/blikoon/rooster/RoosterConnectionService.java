@@ -2,9 +2,11 @@ package com.blikoon.rooster;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -65,6 +67,21 @@ public class RoosterConnectionService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        if( mThread ==null || !mThread.isAlive())
+        {
+            mThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    Looper.prepare();
+                    mTHandler = new Handler();
+                    //THE CODE HERE RUNS IN A BACKGROUND THREAD.
+                    Looper.loop();
+
+                }
+            });
+            mThread.start();
+        }
         Log.d(TAG,"onCreate()");
     }
 
@@ -93,26 +110,17 @@ public class RoosterConnectionService extends Service {
     public void start()
     {
         Log.d(TAG," Service Start() function called.");
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        boolean mActive = prefs.getBoolean("xmpp_logged_in",false);
+
         if(!mActive)
         {
-            mActive = true;
-            if( mThread ==null || !mThread.isAlive())
-            {
-                mThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        Looper.prepare();
-                        mTHandler = new Handler();
-                        initConnection();
-                        //THE CODE HERE RUNS IN A BACKGROUND THREAD.
-                        Looper.loop();
-
-                    }
-                });
-                mThread.start();
-            }
-
+            mTHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initConnection();
+                }
+            });
 
         }
 

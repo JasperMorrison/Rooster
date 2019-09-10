@@ -74,7 +74,7 @@ public class ContactListActivity extends AppCompatActivity {
         {
             super(itemView);
 
-            contactTextView = (TextView) itemView.findViewById(R.id.contact_jid);
+            contactTextView = (TextView) itemView.findViewById(R.id.contact_name);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -99,7 +99,7 @@ public class ContactListActivity extends AppCompatActivity {
                 Log.d(TAG,"Trying to work on a null Contact object ,returning.");
                 return;
             }
-            contactTextView.setText(mContact.getJid());
+            contactTextView.setText(mContact.getName());
 
         }
     }
